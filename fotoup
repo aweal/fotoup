@@ -1,0 +1,121 @@
+#!/bin/bash
+
+USER_NAME="fotoeal"
+
+. msg
+
+
+SOURCE=$1
+DEST=$2
+
+function ctrl_c() {
+    warnimg_msg "Exit :-( ..."
+    exit 2
+}
+
+
+function select_album (){
+    album=$1
+    
+    info_msg "select album number Example 20  ... \n\t HINT: Enter - retry list albums"
+
+    echo "album list.."
+    
+    ./yaploader albums
+
+    read album
+    
+    if [[ $album = "" ]]; then
+	warnimg_msg "Null  album - retry list of albums"
+	select_album
+
+    else
+	return $album
+    fi
+    
+}
+
+
+
+function print_help(){
+    echo
+    echo -e "fotoup! U-SAGE: \n\tfotoup SOURCE_FOLDER DESTINATION_FOLDER"
+    
+}
+
+
+if [[ ! -d $SOURCE || ! -d $DEST ]]; then
+    msg_fail "the SOURCE folder '$SOURCE' or DESTINATION '$DEST' dosn't exist ... "
+    print_help
+    exit 0
+fi
+
+
+
+start_msg "Clone git source to /tmp/yafotkiuploader/  ... "
+
+if [[ -d /tmp/yafotkiuploader/ ]]; then
+    echo ""
+    info_msg "dir exist join ..."
+else
+    cd /tmp &&	git clone https://github.com/svetlyak40wt/yafotkiuploader
+fi
+
+cd /tmp/yafotkiuploader/
+
+if [ $? -eq 0 ] ; then
+    result_ok
+
+else
+    result_fail
+    msg_fail " Fail to download source ... halt"
+    exit 0
+fi
+
+
+info_msg " Installing pip file ... "
+
+python2 virtualenv.py env &&
+    env/bin/pip install -r requirements.txt &&
+    . env/bin/activate
+
+
+if [ $? -eq 0 ] ; then
+    result_ok
+
+else
+    result_fail
+    msg_fail " Fail install reauirement pips ..."
+    exit 0
+fi
+
+
+info_msg "Login with default user:"
+./yaploader auth --username $USER_NAME
+
+if [ $? -eq 0 ] ; then
+    result_ok
+else
+    result_fail
+    msg_fail " authentication ..."
+    exit 0
+fi
+
+
+album=''
+select_album album
+
+if [[ album -ge 1 ]]; then
+    echo "ok continue.."
+else
+    msg_fail " !!! Wrong album nmbr !!! "
+    exit 0
+
+fi
+
+
+for FILENAME in `find $SOURCE -type f` ; do
+    #force mode
+    ./yaploader upload -a $album $FILENAME && mv -v "$FILENAME" $DEST ;
+done
+

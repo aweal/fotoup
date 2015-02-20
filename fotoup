@@ -106,7 +106,8 @@ album=''
 select_album album
 
 if [[ album -ge 1 ]]; then
-    echo "ok continue.."
+    info_msg "start upload ..."
+
 else
     msg_fail " !!! Wrong album nmbr !!! "
     exit 0

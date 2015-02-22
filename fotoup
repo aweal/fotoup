@@ -58,7 +58,7 @@ if [[ -d /tmp/yafotkiuploader/ ]]; then
     echo ""
     info_msg "dir exist join ..."
 else
-    cd /tmp &&	git clone https://github.com/svetlyak40wt/yafotkiuploader
+    cd /tmp && git clone https://github.com/aweal/yafotkiuploader.git
 fi
 
 cd /tmp/yafotkiuploader/
